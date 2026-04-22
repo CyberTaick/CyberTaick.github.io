@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Order Generator | 隨機點餐任務產生器</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            max-width: 550px;
+            width: 90%;
+            margin: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            font-size: 26px;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+        .order-display {
+            background-color: #f8fbfe;
+            border: 2px dashed #aabcd5;
+            padding: 25px 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .order-type {
+            font-size: 20px;
+            font-weight: bold;
+            color: #e74c3c;
+            line-height: 1.4;
+        }
+
+        .food-main {
+            font-size: 26px;
+            font-weight: bold;
+            color: #2c3e50;
+            background: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .modifier-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .mod-badge {
+            background-color: #f1f2f6;
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: #555;
+            border: 1px solid #dfe4ea;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .zh { font-weight: bold; }
+        .py { color: #2980b9; font-size: 0.85em; margin: 0 6px; font-family: 'Arial', sans-serif;}
+        .en { color: #7f8c8d; font-size: 0.85em; font-weight: normal; }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            line-height: 1.4;
+            box-shadow: 0 4px 6px rgba(52, 152, 219, 0.2);
+        }
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(52, 152, 219, 0.3);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+
+        .title-text { font-size: 26px; }
+        .subtitle-py { font-size: 16px; color: #2980b9; font-weight: normal; display: block; margin-top: 5px; }
+        .subtitle-en { font-size: 16px; color: #7f8c8d; font-weight: normal; display: block; margin-top: 2px; }
+        
+        .btn-zh { font-size: 20px; font-weight: bold; }
+        .btn-py { font-size: 14px; color: #d1ecf1; display: block; margin-top: 2px; }
+        .btn-en { font-size: 14px; color: #ecf0f1; display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>
+        <span class="title-text">📝 隨機點餐任務產生器</span>
+        <span class="subtitle-py">Suí jī diǎn cān rèn wù chǎn shēng qì</span>
+        <span class="subtitle-en">Random Order Generator</span>
+    </h1>
+    <div class="order-display" id="orderDisplay">
+        <div class="order-type">
+            <span class="zh">請點擊下方按鈕產生訂單</span><br>
+            <span class="py">Qǐng diǎn jí xià fāng àn niǔ chǎn shēng dìng dān</span><br>
+            <span class="en">Please click the button below to generate an order</span>
+        </div>
+        <div id="orderDetails" style="width: 100%;"></div>
+    </div>
+    <button onclick="generateOrder()">
+        <span class="btn-zh">產生隨機訂單</span>
+        <span class="btn-py">Chǎn shēng suí jī dìng dān</span>
+        <span class="btn-en">Generate Random Order</span>
+    </button>
+</div>
+
+<script>
+    // 建立資料結構：包含中文、拼音、英文
+    const foodItems = [
+        { zh: '滷肉飯', py: 'lǔ ròu fàn', en: 'Braised Pork Rice' },
+        { zh: '牛肉麵', py: 'niú ròu miàn', en: 'Beef Noodles' },
+        { zh: '炒飯', py: 'chǎo fàn', en: 'Fried Rice' },
+        { zh: '乾麵', py: 'gān miàn', en: 'Dry Noodles' },
+        { zh: '便當', py: 'biàn dāng', en: 'Bento' }
+    ];
+
+    const drinkItems = [
+        { zh: '珍珠奶茶', py: 'zhēn zhū nǎi chá', en: 'Bubble Tea' },
+        { zh: '綠茶', py: 'lǜ chá', en: 'Green Tea' },
+        { zh: '紅茶', py: 'hóng chá', en: 'Black Tea' },
+        { zh: '烏龍茶', py: 'wū lóng chá', en: 'Oolong Tea' },
+        { zh: '拿鐵', py: 'ná tiě', en: 'Latte' }
+    ];
+
+    const foodModifiers = [
+        { zh: '加飯', py: 'jiā fàn', en: 'Add Rice' },
+        { zh: '加麵', py: 'jiā miàn', en: 'Add Noodles' },
+        { zh: '不要蒜頭', py: 'bú yào suàn tóu', en: 'No Garlic' },
+        { zh: '不要菜', py: 'bú yào cài', en: 'No Vegetables' }
+    ];
+
+    const drinkSweetness = [
+        { zh: '無糖', py: 'wú táng', en: 'No Sugar' },
+        { zh: '微糖 (30%)', py: 'wéi táng', en: 'Little Sugar' },
+        { zh: '半糖 (50%)', py: 'bàn táng', en: 'Half Sugar' },
+        { zh: '少糖 (70%)', py: 'shǎo táng', en: 'Less Sugar' },
+        { zh: '正常糖', py: 'zhèng cháng táng', en: 'Normal Sugar' }
+    ];
+
+    const drinkTemp = [
+        { zh: '熱', py: 'rè', en: 'Hot' },
+        { zh: '常溫', py: 'cháng wēn', en: 'Room Temp' },
+        { zh: '去冰', py: 'qù bīng', en: 'No Ice' },
+        { zh: '微冰', py: 'wéi bīng', en: 'Little Ice' },
+        { zh: '少冰', py: 'shǎo bīng', en: 'Less Ice' },
+        { zh: '正常冰', py: 'zhèng cháng bīng', en: 'Normal Ice' }
+    ];
+
+    function getRandomItem(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function getRandomModifiers(arr, max) {
+        const shuffled = [...arr].sort(() => 0.5 - Math.random());
+        const count = Math.floor(Math.random() * max) + 1; 
+        return shuffled.slice(0, count);
+    }
+
+    // 格式化顯示單一項目的 HTML 結構
+    function formatItemText(item) {
+        return `<span class="zh">${item.zh}</span> <span class="py">${item.py}</span> <span class="en">(${item.en})</span>`;
+    }
+
+    // 格式化標籤 (Badge)
+    function formatBadge(item) {
+        return `<div class="mod-badge">
+            <div class="zh">${item.zh}</div>
+            <div class="py">${item.py}</div>
+            <div class="en">${item.en}</div>
+        </div>`;
+    }
+
+    function generateOrder() {
+        const isFood = Math.random() > 0.5;
+        const orderDisplay = document.getElementById('orderDisplay');
+        const orderDetails = document.getElementById('orderDetails');
+        
+        let typeHtml = '';
+        let detailsHtml = '';
+
+        if (isFood) {
+            typeHtml = `
+                <span class="zh">🍽️ 食物訂單</span><br>
+                <span class="py" style="color: #c0392b">shí wù dìng dān</span><br>
+                <span class="en" style="color: #e74c3c">Food Order</span>
+            `;
+            
+            const food = getRandomItem(foodItems);
+            
+            const isRice = food.zh.includes('飯') || food.zh.includes('便當');
+            const isNoodle = food.zh.includes('麵');
+            const validModifiers = foodModifiers.filter(m => {
+                if (m.zh === '加飯' && !isRice) return false;
+                if (m.zh === '加麵' && !isNoodle) return false;
+                return true;
+            });
+            
+            const modifiers = getRandomModifiers(validModifiers, 2); 
+            
+            const modHtml = modifiers.map(m => formatBadge(m)).join('');
+
+            detailsHtml = `
+                <div class="food-main">${formatItemText(food)}</div>
+                <div style="font-size:16px; margin: 15px 0 5px; color:#555;">
+                    <span class="zh">規格</span> <span class="py">guī gé</span> <span class="en">(Modifiers)：</span>
+                </div>
+                <div class="modifier-box">${modHtml}</div>
+            `;
+        } else {
+            typeHtml = `
+                <span class="zh">🥤 飲料訂單</span><br>
+                <span class="py" style="color: #c0392b">yǐn liào dìng dān</span><br>
+                <span class="en" style="color: #e74c3c">Drink Order</span>
+            `;
+            
+            const drink = getRandomItem(drinkItems);
+            const sweet = getRandomItem(drinkSweetness);
+            const temp = getRandomItem(drinkTemp);
+            
+            const modHtml = formatBadge(sweet) + formatBadge(temp);
+
+            detailsHtml = `
+                <div class="food-main">${formatItemText(drink)}</div>
+                <div style="font-size:16px; margin: 15px 0 5px; color:#555;">
+                    <span class="zh">規格</span> <span class="py">guī gé</span> <span class="en">(Modifiers)：</span>
+                </div>
+                <div class="modifier-box">${modHtml}</div>
+            `;
+        }
+
+        document.querySelector('.order-type').innerHTML = typeHtml;
+        orderDetails.innerHTML = detailsHtml;
+    }
+</script>
+
+</body>
+</html>
